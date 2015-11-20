@@ -20,20 +20,20 @@ class EntityStoreCacheTest extends MarathonSpec with GivenWhenThen with Matchers
     entityCache.onElected.futureValue
 
     Then("All values are cached")
-    entityCache.cache should have size 3
-    entityCache.cache.keySet should be(names)
+    entityCache.cacheOpt.get should have size 3
+    entityCache.cacheOpt.get.keySet should be(names)
   }
 
   test("The onDefeated trigger will clear the state") {
     Given("A pre-filled entityCache")
     val names = Set("a", "b", "c")
-    entityCache.cache ++= names.map(t => t -> Some(new TestApp(t)))
+    entityCache.cacheOpt.get ++= names.map(t => t -> Some(new TestApp(t)))
 
     When("On defeated is called on the cache")
     entityCache.onDefeated
 
     Then("All values are removed")
-    entityCache.cache should have size 0
+    entityCache.cacheOpt.get should have size 0
   }
 
   test("Fetching an entry will succeed without querying store") {
@@ -41,7 +41,7 @@ class EntityStoreCacheTest extends MarathonSpec with GivenWhenThen with Matchers
     val store = mock[EntityStore[TestApp]]
     entityCache = new EntityStoreCache[TestApp](store)
     val names = Set("a", "b", "c")
-    entityCache.cache ++= names.map(t => t -> Some(new TestApp(t)))
+    entityCache.cacheOpt.get ++= names.map(t => t -> Some(new TestApp(t)))
 
     When("Fetch an existing entry from the cache")
     val a = entityCache.fetch("a").futureValue
@@ -96,7 +96,7 @@ class EntityStoreCacheTest extends MarathonSpec with GivenWhenThen with Matchers
 
     Then("The value is returned and the cache is updated")
     a should be(update)
-    entityCache.cache("a") should be(Some(update))
+    entityCache.cacheOpt.get("a") should be(Some(update))
   }
 
   test("Expunge will also clear the cache") {
@@ -111,7 +111,7 @@ class EntityStoreCacheTest extends MarathonSpec with GivenWhenThen with Matchers
 
     Then("The value is expunged")
     result should be(true)
-    entityCache.cache.get("a") should be(None)
+    entityCache.cacheOpt.get.get("a") should be(None)
   }
 
   test("Names will list all entries (versioned and unversioned)") {
@@ -127,8 +127,8 @@ class EntityStoreCacheTest extends MarathonSpec with GivenWhenThen with Matchers
 
     Then("All names are returned")
     allNames should have size 6
-    entityCache.cache should have size 6
-    entityCache.cache.values.flatten should have size 3
+    entityCache.cacheOpt.get should have size 6
+    entityCache.cacheOpt.get.values.flatten should have size 3
   }
 
   var content: mutable.Map[String, TestApp] = _
