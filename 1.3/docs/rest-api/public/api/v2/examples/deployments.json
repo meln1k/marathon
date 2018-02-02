@@ -1,0 +1,47 @@
+[
+  {
+    "id": "97c136bf-5a28-4821-9d94-480d9fbb01c8",
+    "version": "2015-09-30T09:09:17.614Z",
+    "affectedApps": [
+      "/foo"
+    ],
+    "steps": [
+      {
+        "actions": [
+          {
+            "action": "StartApplication",
+            "app": "/foo"
+          }
+        ]
+      },
+      {
+        "actions": [
+          {
+            "action": "ScaleApplication",
+            "app": "/foo"
+          }
+        ]
+      }
+    ],
+    "currentActions": [
+      {
+        "action": "ScaleApplication",
+        "app": "/foo",
+        "readinessCheckResults": [
+          {
+            "taskId": "foo.c9de6033",
+            "lastResponse": {
+              "body": "{}",
+              "contentType": "application/json",
+              "status": 500
+            },
+            "name": "myReadyCheck",
+            "ready": false
+          }
+        ]
+      }
+    ],
+    "currentStep": 2,
+    "totalSteps": 2
+  }
+]
