@@ -31,7 +31,7 @@
                   <span class="icon-bar"></span>
                   <span class="icon-bar"></span>
                 </button>
-                <a class="navbar-brand" href="/marathon/">Marathon</a>
+                <a class="navbar-brand" href="/marathon">Marathon</a>
               </div>
               <div class="collapse navbar-collapse" id="navbar-collapse">
                 <ul class="nav navbar-nav">
@@ -47,7 +47,7 @@
                 </ul>
                 <div class="grid" id="searchBar">
                   <div id="search">
-                    <form role="search" method="get" action="/marathon//search/">
+                    <form role="search" method="get" action="/marathon/search/">
                       <input id="searchString" name="searchString"
                              placeholder="Search Marathon Docs" type="text">
                       <input id="searchButton" name="googleSearchName" type="submit" value="Search">
@@ -191,6 +191,11 @@
                 </a>
             </li>
             <li>
+                <a href="/marathon/docs/data-migration.html">
+                    Data Migration
+                </a>
+            </li>
+            <li>
                 <a href="/marathon/docs/framework-authentication.html">
                     Framework Authentication
                 </a>
@@ -223,6 +228,11 @@
             <li>
                 <a href="/marathon/docs/native-docker-private-registry.html">
                     Using a Private Docker Registry
+                </a>
+            </li>
+            <li>
+                <a href="/marathon/docs/maintenance-mode.html">
+                    Maintenance mode
                 </a>
             </li>
         </ul>
@@ -273,6 +283,11 @@
                     Error Reading Authentication Secret
                 </a>
             </li>
+            <li>
+                <a href="/marathon/docs/cfs.html">
+                    Slow Docker apps and deployments
+                </a>
+            </li>
         </ul>
 
         <h5>Development</h5>
@@ -307,16 +322,20 @@
         </ul>
         <h5>Docs for Previous Versions</h5>
         <ul class="list-unstyled">
-          <li><a href="https://github.com/mesosphere/marathon/tree/v1.4.0/docs/docs">Version 1.4.0</a></li>
-          <li><a href="https://github.com/mesosphere/marathon/tree/v1.3.0/docs/docs">Version 1.3.0</a></li>
-          <li><a href="https://github.com/mesosphere/marathon/tree/v1.1.0/docs/docs">Version 1.1.0</a></li>
+            
+            <li><a href="/marathon/1.6/docs">Version 1.6.x</a></li>
+            
+            <li><a href="/marathon/1.5/docs">Version 1.5.x</a></li>
+            
+            <li><a href="/marathon/1.4/docs">Version 1.4.x</a></li>
+            
         </ul>
     </div>
 
     <div class="col-sm-9">
         <h1 id="using-a-private-docker-registry">Using a Private Docker Registry</h1>
 
-<p>As of Marathon 1.5, you can upload your private Docker registry credentials to a secret store, then reference them in your app or pod definition. This functionality is only available if you are using the Mesos containerizer. If you are using the Docker containerizer, follow <a href="#docker-containerizer">these instructions</a> to use a private Docker registry.</p>
+<p>As of Marathon 1.5, you can upload your private Docker registry credentials to a secret store, then reference them in your app or pod definition. This functionality is only available if you are using the Mesos containerizer. If you are using the Docker containerizer, follow <a href="#docker-containerizer">these instructions</a> to use a private Docker registry. If you want to learn how to configure credentials to pull images from the Amazon Elastic Container Registry (AWS ECR) please refer to <a href="https://aws.amazon.com/blogs/apn/automating-ecr-authentication-on-marathon-with-the-amazon-ecr-credential-helper/">this blog post</a>.</p>
 
 <h2 id="step-1-create-a-credentials-file">Step 1: Create a Credentials File</h2>
 
@@ -539,10 +558,9 @@ the <code class="highlighter-rouge">uris</code> field of your app. The <code cla
 </code></pre>
     </div>
 
-    <div class="alert alert-info">
-    <strong>Note:</strong>
-   The URI must be accessible by all nodes that will start your application. You can distribute the file to the local filesystem of all nodes, for example via RSYNC/SCP, or store it on a shared network drive like [Amazon S3](http://aws.amazon.com/s3/). Consider the security implications of your chosen approach carefully.
-  </div>
+    <p><strong>Note:</strong>
+ The URI must be accessible by all nodes that will start your application.
+ You can distribute the file to the local filesystem of all nodes, for example via RSYNC/SCP, or store it on a shared network drive like <a href="https://cloud.google.com/storage/">Google Cloud Storage</a> or <a href="https://aws.amazon.com/s3/">Amazon S3</a>. Consider the security implications of your chosen approach carefully.</p>
   </li>
 </ol>
 
@@ -550,12 +568,14 @@ the <code class="highlighter-rouge">uris</code> field of your app. The <code cla
 
 <ol>
   <li>
-    <p>Add the path to the archive file login credentials to the <code class="highlighter-rouge">uris</code> parameter of your app definition.</p>
+    <p>Add the path to the archive file login credentials to the <code class="highlighter-rouge">fetch</code> parameter of your app definition.</p>
 
-    <div class="language-bash highlighter-rouge"><pre class="highlight"><code><span class="s2">"uris"</span>: <span class="o">[</span>
-   <span class="s2">"file:///etc/docker.tar.gz"</span>
-<span class="o">]</span>
-</code></pre>
+    <div class="language-json highlighter-rouge"><pre class="highlight"><code><span class="s2">"fetch"</span><span class="err">:</span><span class="w"> </span><span class="p">[</span><span class="w">
+  </span><span class="p">{</span><span class="w">
+    </span><span class="nt">"uri"</span><span class="p">:</span><span class="w"> </span><span class="s2">"file:///etc/docker.tar.gz"</span><span class="w">
+  </span><span class="p">}</span><span class="w">
+</span><span class="p">]</span><span class="w">
+</span></code></pre>
     </div>
   </li>
   <li>
@@ -573,8 +593,10 @@ the <code class="highlighter-rouge">uris</code> field of your app. The <code cla
       </span><span class="nt">"network"</span><span class="p">:</span><span class="w"> </span><span class="s2">"HOST"</span><span class="w">
     </span><span class="p">}</span><span class="w">
   </span><span class="p">},</span><span class="w">
-  </span><span class="nt">"uris"</span><span class="p">:</span><span class="w">  </span><span class="p">[</span><span class="w">
-      </span><span class="s2">"file:///etc/docker.tar.gz"</span><span class="w">
+  </span><span class="nt">"fetch"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="w">
+    </span><span class="p">{</span><span class="w">
+      </span><span class="nt">"uri"</span><span class="p">:</span><span class="w"> </span><span class="s2">"file:///etc/docker.tar.gz"</span><span class="w">
+    </span><span class="p">}</span><span class="w">
   </span><span class="p">]</span><span class="w">
 </span><span class="p">}</span><span class="w">
 </span></code></pre>
@@ -594,7 +616,7 @@ the <code class="highlighter-rouge">uris</code> field of your app. The <code cla
 
           <footer>
             <p class="text-muted">
-              &copy; 2016 <a class="text-muted" href="http://mesosphere.com">Mesosphere, Inc.</a>
+              &copy; 2018 <a class="text-muted" href="http://mesosphere.com">Mesosphere, Inc.</a>
             </p>
           </footer>
         </div>

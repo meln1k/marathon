@@ -31,7 +31,7 @@
                   <span class="icon-bar"></span>
                   <span class="icon-bar"></span>
                 </button>
-                <a class="navbar-brand" href="/marathon/">Marathon</a>
+                <a class="navbar-brand" href="/marathon">Marathon</a>
               </div>
               <div class="collapse navbar-collapse" id="navbar-collapse">
                 <ul class="nav navbar-nav">
@@ -47,7 +47,7 @@
                 </ul>
                 <div class="grid" id="searchBar">
                   <div id="search">
-                    <form role="search" method="get" action="/marathon//search/">
+                    <form role="search" method="get" action="/marathon/search/">
                       <input id="searchString" name="searchString"
                              placeholder="Search Marathon Docs" type="text">
                       <input id="searchButton" name="googleSearchName" type="submit" value="Search">
@@ -191,6 +191,11 @@
                 </a>
             </li>
             <li>
+                <a href="/marathon/docs/data-migration.html">
+                    Data Migration
+                </a>
+            </li>
+            <li>
                 <a href="/marathon/docs/framework-authentication.html">
                     Framework Authentication
                 </a>
@@ -223,6 +228,11 @@
             <li>
                 <a href="/marathon/docs/native-docker-private-registry.html">
                     Using a Private Docker Registry
+                </a>
+            </li>
+            <li>
+                <a href="/marathon/docs/maintenance-mode.html">
+                    Maintenance mode
                 </a>
             </li>
         </ul>
@@ -273,6 +283,11 @@
                     Error Reading Authentication Secret
                 </a>
             </li>
+            <li>
+                <a href="/marathon/docs/cfs.html">
+                    Slow Docker apps and deployments
+                </a>
+            </li>
         </ul>
 
         <h5>Development</h5>
@@ -307,9 +322,13 @@
         </ul>
         <h5>Docs for Previous Versions</h5>
         <ul class="list-unstyled">
-          <li><a href="https://github.com/mesosphere/marathon/tree/v1.4.0/docs/docs">Version 1.4.0</a></li>
-          <li><a href="https://github.com/mesosphere/marathon/tree/v1.3.0/docs/docs">Version 1.3.0</a></li>
-          <li><a href="https://github.com/mesosphere/marathon/tree/v1.1.0/docs/docs">Version 1.1.0</a></li>
+            
+            <li><a href="/marathon/1.6/docs">Version 1.6.x</a></li>
+            
+            <li><a href="/marathon/1.5/docs">Version 1.5.x</a></li>
+            
+            <li><a href="/marathon/1.4/docs">Version 1.4.x</a></li>
+            
         </ul>
     </div>
 
@@ -366,45 +385,88 @@ number of relatively approachable issues with the label
 _TODO_: Do we need a CLA?
 -->
 
-<h2 id="submitting-code-changes-to-marathon">Submitting Code Changes to Marathon</h2>
+<h2 id="jira-issues-suggesting-bugs-and-improvements">JIRA Issues (Suggesting Bugs and Improvements)</h2>
+
+<p>As a general rule, before any change is made to Marathon, a JIRA ticket is filed for bugs, or for proposed
+improvements. As a guideline, an improvement ticket should include the following:</p>
 
 <ul>
-  <li>
-    <p>A GitHub pull request is the preferred way of submitting patch sets. Please
-rebase your pull requests on top of the current master using
-<code class="highlighter-rouge">git fetch origin &amp;&amp; git rebase origin/master</code>, and squash your changes to a single commit as
-described <a href="http://gitready.com/advanced/2009/02/10/squashing-commits-with-rebase.html">here</a>.
-Yes, we want you to rewrite history - the branch on which you are
-implementing your changes is only meant for this pull request. You can
-either rebase before or after you squash your commits, depending on how
-you’d like to resolve potential merge conflicts. The idea behind is that we
-don’t want an arbitrary number of commits for one pull request, but exactly
-one commit. This commit should be easy to merge onto master, therefore we
-ask you to rebase to master.</p>
-  </li>
-  <li>
-    <p>Please start your commit message with “Fixes #1234 - “ where #1234 is the github issue number
-that your pull request relates to. Github will automatically link this PR to the issue and make it more
-visible to others.</p>
-  </li>
-  <li>
-    <p>Any changes in the public API or behavior must be reflected in the project
-documentation.</p>
-  </li>
-  <li>
-    <p>Any changes in the public API or behavior must be reflected in the changelog.md.</p>
-  </li>
-  <li>
-    <p>Pull requests should include appropriate additions to the unit test suite.</p>
-  </li>
-  <li>
-    <p>If the change is a bugfix, then the added tests must fail without the patch
-as a safeguard against future regressions.</p>
-  </li>
-  <li>
-    <p>Run all tests via the supplied <code class="highlighter-rouge">./bin/run-tests.sh</code> script (requires docker).</p>
-  </li>
+  <li>Include a background and motivation</li>
+  <li>An overview of the proposed change</li>
+  <li>Some acceptance criteria (how would you manually verify that this change worked?)</li>
 </ul>
+
+<p>As the Marathon product team, major changes and new features go through a process of proposal and discussion in order to
+help us understand the impact and how it aligns with our longer term goals. Creating a JIRA before submitting a code
+change sets the stage for this necessary discussion to happen, consensus on direction to be achieved, ideally before too
+much effort is spent coding it.</p>
+
+<p>If a behavioral change isn’t discussed before code is submitted, there is a higher chance there will be some
+unconsidered side-effect of the change, or that the change is not in alignment with the long-term vision of Marathon.</p>
+
+<p>Sometimes, we are overwhelmed by the never ending sea of JIRA. If you submit an issue, and don’t feel it is getting the
+level of attention that it should, please find us in the
+<a href="https://mesos.slack.com/messages/C1L7D22KY/">#marathon channel</a> on the Mesos community Slack.</p>
+
+<h2 id="backporting-policy">Backporting Policy</h2>
+
+<p>All development (new features and bug fixes) are made, first, to the master branch.</p>
+
+<p>If code is heavily refactored but the behavior has not been changed, these patches are generally not backported unless
+it will help reduce merge conflicts in the future.</p>
+
+<p>Bugs are backported to the current supported versions of Marathon. Historically, this usually tends to be the
+current stable release, plus the past 2 major releases. (IE, if <code class="highlighter-rouge">1.5.6</code> is the last stable release, then <code class="highlighter-rouge">1.4.x</code> and <code class="highlighter-rouge">1.3.x</code> would also
+receive the fix).</p>
+
+<p>New features are rarely backported; when they are, they are backported to the latest stable version of Marathon. Major
+new features are definitely not backported.</p>
+
+<h2 id="submitting-code-changes-to-marathon">Submitting Code Changes to Marathon</h2>
+
+<ol>
+  <li>
+    <p>A GitHub pull request is the preferred way of submitting code changes.</p>
+  </li>
+  <li>
+    <p>If a JIRA issue doesn’t already exist, please open one for the proposed change or bug-fix (see the section above,
+“JIRA Issues”).</p>
+  </li>
+  <li>
+    <p>Except for simple bug fixes, start a discussion in the JIRA ticket created in step 2 (ideally, in the comments
+section, but, also in the <a href="https://mesos.slack.com/messages/C1L7D22KY/">#marathon channel</a>). Seek to get validation
+and consensus before making the change.</p>
+  </li>
+  <li>
+    <p>Please rebase your pull requests on top of the current master, as needed, to integrate upstream changes and resolve
+conflicts. You can squash your commits if it helps resolve potential merge conflicts. When your PR is merged, it will
+be squashed to a single commit.</p>
+  </li>
+  <li>
+    <p>If you are targeting to get something fixed for an older release of Marathon, fix it on master, first. If it is
+already fixed in master, first, find out why. See our “Backporting Policy” above.</p>
+  </li>
+  <li>
+    <p>Please include in your commit message the line “JIRA Issues: MARATHON-1234”, where MARATHON-1234 is the JIRA issue
+mentioned in item 2 above. This helps reviewers better understand the context of the change.</p>
+  </li>
+  <li>
+    <p>If you change modifies the public API or behavior, then the project documentation must be updated (in the same pull
+request). Further, notes about the change should be specified in changelog.md.</p>
+  </li>
+  <li>
+    <p>Pull requests should include appropriate additions to the unit test suite (see “Test Guidelines”, below). If the
+change is a bugfix, then one of the added tests should fail without the fix.</p>
+  </li>
+  <li>
+    <p>Compile your code prior to committing. We would like the result of our automatic code formatters to be included in
+the commit as to not produce a dirty work tree after fresh checkout and first compile.</p>
+  </li>
+  <li>
+    <p>Run, at the very least, all unit tests (<code class="highlighter-rouge">sbt test</code>). Integration tests can also be run with
+<code class="highlighter-rouge">sbt integration:test</code> (requires docker).</p>
+  </li>
+</ol>
 
 <h2 id="test-guidelines">Test Guidelines</h2>
 
@@ -414,6 +476,7 @@ as a safeguard against future regressions.</p>
   <li>Tests should extend <code class="highlighter-rouge">mesosphere.UnitTest</code></li>
   <li>Tests should avoid testing more behavior than necessary; IE - don’t test other libs or services if a mock/stub
 suffices.</li>
+  <li>Tests must be deterministic. Whenever possible, the system clock should not be an input to the test.</li>
 </ul>
 
 <h3 id="fixtures">Fixtures</h3>
@@ -430,6 +493,69 @@ cleaned up when the suite finishes. Use either unique actor names or use the loa
 <a href="http://www.scalatest.org/user_guide/sharing_fixtures#loanFixtureMethods">loan-fixtures methods</a>. Otherwise, prefer
 parameterized case classes or traits.</li>
 </ul>
+
+<h2 id="running-integration-tests">Running Integration Tests</h2>
+
+<h3 id="prerequisites">Prerequisites</h3>
+
+<p>Running integration tests requires that several components are installed and available locally:</p>
+
+<ul>
+  <li>Mesos (master and agent)</li>
+  <li>Docker</li>
+  <li>Mesos native lib (with <code class="highlighter-rouge">MESOS_NATIVE_JAVA_LIBRARY</code> set)</li>
+</ul>
+
+<p>Note that the integration test suites launch and use a local, embedded, version of Zookeeper.</p>
+
+<h4 id="installing-mesos">Installing Mesos</h4>
+
+<p>Marathon integration tests require an installation of Mesos in order to run. The Mesos executables, including <code class="highlighter-rouge">mesos</code>, <code class="highlighter-rouge">mesos-master</code>, and <code class="highlighter-rouge">mesos-agent</code> must be included in the <code class="highlighter-rouge">PATH</code>. Further, the environment variable <code class="highlighter-rouge">MESOS_NATIVE_JAVA_LIBRARY</code> should be set to the path of <code class="highlighter-rouge">libmesos.dylib</code> / <code class="highlighter-rouge">libmesos.so</code>.</p>
+
+<h5 id="installing-from-source-manually">Installing from source, manually</h5>
+
+<p>You can install Mesos from source, manually, by following the instructions <a href="http://mesos.apache.org/documentation/latest/building/">here</a></p>
+
+<h5 id="installing-from-source-using-mvmsh">Installing from source using mvm.sh</h5>
+
+<p>To install Mesos from source, you can use the provided <code class="highlighter-rouge">scripts/mvm.sh</code> script. Please read the header of the script for pre-requisite steps.</p>
+
+<div class="highlighter-rouge"><pre class="highlight"><code>scripts/mvm.sh --latest
+</code></pre>
+</div>
+
+<p>This will take 30 minutes or so to install on a modern processor.</p>
+
+<h5 id="installing-from-homebrew-os-x-fastest">Installing from Homebrew (OS X, fastest)</h5>
+
+<p>You can install a version of Mesos from Homebrew. The Homebrew Mesos version often lags behind the latest version of Mesos. Most of the time, however, this is not a problem.</p>
+
+<h3 id="running-tests">Running Tests</h3>
+
+<p>Some integration tests are disabled by default (references <code class="highlighter-rouge">WhenEnvSet</code>). Setting these environment variables will enable them.
+<code class="highlighter-rouge">
+export RUN_DOCKER_INTEGRATION_TESTS=false
+export RUN_MESOS_INTEGRATION_TESTS=false
+</code></p>
+
+<p>To run all of the integration tests using sbt:</p>
+
+<div class="highlighter-rouge"><pre class="highlight"><code>sbt integration:test
+</code></pre>
+</div>
+
+<p>To run a single integration test:</p>
+
+<div class="highlighter-rouge"><pre class="highlight"><code>$ sbt
+
+marathon(...)&gt; set testOptions in Test := Nil
+
+...
+
+
+marathon(...)&gt; test-only mesosphere.marathon.integration.AppDeployIntegrationTest -- -oF
+</code></pre>
+</div>
 
 <h2 id="source-files">Source Files</h2>
 
@@ -542,7 +668,7 @@ signature explicitly expects a <code class="highlighter-rouge">PartialFunction[_
 
           <footer>
             <p class="text-muted">
-              &copy; 2016 <a class="text-muted" href="http://mesosphere.com">Mesosphere, Inc.</a>
+              &copy; 2018 <a class="text-muted" href="http://mesosphere.com">Mesosphere, Inc.</a>
             </p>
           </footer>
         </div>

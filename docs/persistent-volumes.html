@@ -31,7 +31,7 @@
                   <span class="icon-bar"></span>
                   <span class="icon-bar"></span>
                 </button>
-                <a class="navbar-brand" href="/marathon/">Marathon</a>
+                <a class="navbar-brand" href="/marathon">Marathon</a>
               </div>
               <div class="collapse navbar-collapse" id="navbar-collapse">
                 <ul class="nav navbar-nav">
@@ -47,7 +47,7 @@
                 </ul>
                 <div class="grid" id="searchBar">
                   <div id="search">
-                    <form role="search" method="get" action="/marathon//search/">
+                    <form role="search" method="get" action="/marathon/search/">
                       <input id="searchString" name="searchString"
                              placeholder="Search Marathon Docs" type="text">
                       <input id="searchButton" name="googleSearchName" type="submit" value="Search">
@@ -191,6 +191,11 @@
                 </a>
             </li>
             <li>
+                <a href="/marathon/docs/data-migration.html">
+                    Data Migration
+                </a>
+            </li>
+            <li>
                 <a href="/marathon/docs/framework-authentication.html">
                     Framework Authentication
                 </a>
@@ -223,6 +228,11 @@
             <li>
                 <a href="/marathon/docs/native-docker-private-registry.html">
                     Using a Private Docker Registry
+                </a>
+            </li>
+            <li>
+                <a href="/marathon/docs/maintenance-mode.html">
+                    Maintenance mode
                 </a>
             </li>
         </ul>
@@ -273,6 +283,11 @@
                     Error Reading Authentication Secret
                 </a>
             </li>
+            <li>
+                <a href="/marathon/docs/cfs.html">
+                    Slow Docker apps and deployments
+                </a>
+            </li>
         </ul>
 
         <h5>Development</h5>
@@ -307,19 +322,18 @@
         </ul>
         <h5>Docs for Previous Versions</h5>
         <ul class="list-unstyled">
-          <li><a href="https://github.com/mesosphere/marathon/tree/v1.4.0/docs/docs">Version 1.4.0</a></li>
-          <li><a href="https://github.com/mesosphere/marathon/tree/v1.3.0/docs/docs">Version 1.3.0</a></li>
-          <li><a href="https://github.com/mesosphere/marathon/tree/v1.1.0/docs/docs">Version 1.1.0</a></li>
+            
+            <li><a href="/marathon/1.6/docs">Version 1.6.x</a></li>
+            
+            <li><a href="/marathon/1.5/docs">Version 1.5.x</a></li>
+            
+            <li><a href="/marathon/1.4/docs">Version 1.4.x</a></li>
+            
         </ul>
     </div>
 
     <div class="col-sm-9">
         <h1 id="stateful-applications-using-local-persistent-volumes">Stateful Applications Using Local Persistent Volumes</h1>
-
-<div class="alert alert-danger" role="alert">
-  <span class="glyphicon glyphicon-exclamation-sign" aria-hidden="true"></span> Adapted in Marathon Version 1.0 <br />
-  The Persistent Storage functionality is considered beta, so use this feature at your own risk. We might add, change, or delete any functionality described in this document.
-</div>
 
 <p>Marathon applications lose their state when they terminate and are relaunched. In some contexts, for instance, if your application uses MySQL, you’ll want your application to preserve its state. You can create a stateful application by specifying a local persistent volume. Local volumes enable stateful tasks because tasks can be restarted without data loss.</p>
 
@@ -366,16 +380,17 @@
   <li><code class="highlighter-rouge">mode</code>: The access mode of the volume. Currently, <code class="highlighter-rouge">"RW"</code> is the only possible value and will let your application read from and write to the volume.</li>
   <li><code class="highlighter-rouge">persistent.type</code>: The type of mesos disk resource to use; the valid options are <code class="highlighter-rouge">root</code>, <code class="highlighter-rouge">path</code>, and <code class="highlighter-rouge">mount</code>, corresponding to the <a href="http://mesos.apache.org/documentation/latest/multiple-disk/">valid mesos multi-disk resource types</a>.</li>
   <li><code class="highlighter-rouge">persistent.size</code>: The size of the persistent volume in MiBs.</li>
+  <li><code class="highlighter-rouge">persistent.profileName</code>: (not seen above) The storage volume profile. Only volumes with the specified profile are used to launch an application. It this option is not given, any volume (with or without a profile) will be used for launching.</li>
   <li><code class="highlighter-rouge">persistent.maxSize</code>: (not seen above) For <code class="highlighter-rouge">root</code> mesos disk resources, the optional maximum size of an exclusive mount volume to be considered.</li>
   <li><code class="highlighter-rouge">persistent.constraints</code>: Constraints restricting where new persistent volumes should be created. Currently, it is only possible to constrain the path of the disk resource by regular expression.</li>
 </ul>
 
-<p>You also need to set the <code class="highlighter-rouge">residency</code> node in order to tell Marathon to setup a stateful application. Currently, the only valid option for this is:
-<code class="highlighter-rouge">
-"residency": {
-  "taskLostBehavior": "WAIT_FOREVER"
-}
-</code></p>
+<p>Next, we also need to disable <code class="highlighter-rouge">unreachableStrategy</code> in order to tell Marathon to setup a stateful app:</p>
+
+<div class="highlighter-rouge"><pre class="highlight"><code>"unreachableStrategy": "disabled",
+</code></pre>
+</div>
+<p>Unreachable strategy must be set to <code class="highlighter-rouge">disabled</code>, otherwise marathon will complain.</p>
 
 <h3 id="scaling-stateful-applications">Scaling stateful applications</h3>
 
@@ -391,6 +406,59 @@
 <p>The default <code class="highlighter-rouge">UpgradeStrategy</code> for a stateful application is a <code class="highlighter-rouge">minimumHealthCapacity</code> of <code class="highlighter-rouge">0.5</code> and a <code class="highlighter-rouge">maximumOverCapacity</code> of <code class="highlighter-rouge">0</code>. If you override this default, your definition must stay below these values in order to pass validation. The <code class="highlighter-rouge">UpgradeStrategy</code> must stay below these values because Marathon needs to be able to kill old tasks before starting new ones so that the new versions can take over reservations and volumes and Marathon cannot create additional tasks (as a <code class="highlighter-rouge">maximumOverCapacity &gt; 0</code> would induce) in order to prevent additional volume creation.</p>
 
 <p><strong>Note:</strong> For a stateful application, Marathon will never start more instances than specified in the <code class="highlighter-rouge">UpgradeStrategy</code>, and will kill old instances rather than create new ones during an upgrade or restart.</p>
+
+<h2 id="creating-a-pod-with-local-persistent-volumes">Creating a pod with local persistent volumes</h2>
+
+<h3 id="configuration-options-1">Configuration options</h3>
+
+<p>Let’s configure a persistent volume with the following options:</p>
+
+<div class="language-json highlighter-rouge"><pre class="highlight"><code><span class="s2">"volumes"</span><span class="err">:</span><span class="w"> </span><span class="p">[</span><span class="w">
+  </span><span class="p">{</span><span class="w">
+    </span><span class="nt">"name"</span><span class="p">:</span><span class="w"> </span><span class="s2">"pst"</span><span class="p">,</span><span class="w">
+    </span><span class="nt">"persistent"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+      </span><span class="nt">"type"</span><span class="p">:</span><span class="w"> </span><span class="s2">"root"</span><span class="p">,</span><span class="w">
+      </span><span class="nt">"size"</span><span class="p">:</span><span class="w"> </span><span class="mi">10</span><span class="p">,</span><span class="w">
+      </span><span class="nt">"constraints"</span><span class="p">:</span><span class="w"> </span><span class="p">[]</span><span class="w">
+    </span><span class="p">}</span><span class="w">
+  </span><span class="p">}</span><span class="w">
+</span><span class="p">]</span><span class="w">
+</span></code></pre>
+</div>
+
+<ul>
+  <li><code class="highlighter-rouge">name</code>: Name of the pod level volume</li>
+  <li><code class="highlighter-rouge">persistent.type</code>: The type of mesos disk resource to use; the valid options are <code class="highlighter-rouge">root</code>, <code class="highlighter-rouge">path</code>, and <code class="highlighter-rouge">mount</code>, corresponding to the <a href="http://mesos.apache.org/documentation/latest/multiple-disk/">valid mesos multi-disk resource types</a>.</li>
+  <li><code class="highlighter-rouge">persistent.size</code>: The size of the persistent volume in MiBs.</li>
+  <li><code class="highlighter-rouge">persistent.maxSize</code>: (not seen above) For <code class="highlighter-rouge">root</code> mesos disk resources, the optional maximum size of an exclusive mount volume to be considered.</li>
+  <li><code class="highlighter-rouge">persistent.profileName</code>: (not seen above) The storage volume profile. Only volumes with the specified profile are used to launch an application. It this option is not given, any volume (with or without a profile) will be used for launching.</li>
+  <li><code class="highlighter-rouge">persistent.constraints</code>: Constraints restricting where new persistent volumes should be created. Currently, it is only possible to constrain the path of the disk resource by regular expression.</li>
+</ul>
+
+<p>Next, we also need to disable <code class="highlighter-rouge">unreachableStrategy</code> in order to tell Marathon to setup a stateful pod:</p>
+
+<div class="highlighter-rouge"><pre class="highlight"><code>"unreachableStrategy": "disabled",
+</code></pre>
+</div>
+<p>Unreachable strategy must be set to <code class="highlighter-rouge">disabled</code>, otherwise marathon will complain.</p>
+
+<p>Finally, we have to specify volume mount parameter:</p>
+
+<div class="highlighter-rouge"><pre class="highlight"><code>"volumeMounts": [
+  {
+    "name": "pst",
+    "mountPath": "pst1",
+    "readOnly": false
+  }
+]
+</code></pre>
+</div>
+
+<ul>
+  <li><code class="highlighter-rouge">name</code>: The name of the volume to reference.</li>
+  <li><code class="highlighter-rouge">mountPath</code>: The path inside the container at which the volume is mounted.</li>
+  <li><code class="highlighter-rouge">readOnly</code>: If the volume is mounted as read-only or not.</li>
+</ul>
 
 <h2 id="under-the-hood">Under the Hood</h2>
 
@@ -502,9 +570,6 @@
     </span><span class="nt">"POSTGRES_PASSWORD"</span><span class="p">:</span><span class="w"> </span><span class="s2">"password"</span><span class="p">,</span><span class="w">
     </span><span class="nt">"PGDATA"</span><span class="p">:</span><span class="w"> </span><span class="s2">"pgdata"</span><span class="w">
   </span><span class="p">},</span><span class="w">
-  </span><span class="nt">"residency"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
-    </span><span class="nt">"taskLostBehavior"</span><span class="p">:</span><span class="w"> </span><span class="s2">"WAIT_FOREVER"</span><span class="w">
-  </span><span class="p">},</span><span class="w">
   </span><span class="nt">"upgradeStrategy"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
     </span><span class="nt">"maximumOverCapacity"</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w">
     </span><span class="nt">"minimumHealthCapacity"</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="w">
@@ -593,6 +658,106 @@
 </span></code></pre>
 </div>
 
+<h3 id="creating-a-pod-with-persistent-volume">Creating a pod with persistent volume</h3>
+
+<p>Following example will create a pod with 2 containers and one shared persistent volume.</p>
+
+<div class="language-json highlighter-rouge"><pre class="highlight"><code><span class="p">{</span><span class="w">
+  </span><span class="nt">"id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"/persistent-volume-pod"</span><span class="p">,</span><span class="w">
+  </span><span class="nt">"volumes"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="w">
+    </span><span class="p">{</span><span class="w">
+      </span><span class="nt">"name"</span><span class="p">:</span><span class="w"> </span><span class="s2">"pst"</span><span class="p">,</span><span class="w">
+      </span><span class="nt">"persistent"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+        </span><span class="nt">"type"</span><span class="p">:</span><span class="w"> </span><span class="s2">"root"</span><span class="p">,</span><span class="w">
+        </span><span class="nt">"size"</span><span class="p">:</span><span class="w"> </span><span class="mi">10</span><span class="p">,</span><span class="w">
+        </span><span class="nt">"constraints"</span><span class="p">:</span><span class="w"> </span><span class="p">[]</span><span class="w">
+      </span><span class="p">}</span><span class="w">
+    </span><span class="p">}</span><span class="w">
+  </span><span class="p">],</span><span class="w">
+  </span><span class="nt">"scaling"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+    </span><span class="nt">"kind"</span><span class="p">:</span><span class="w"> </span><span class="s2">"fixed"</span><span class="p">,</span><span class="w">
+    </span><span class="nt">"instances"</span><span class="p">:</span><span class="w"> </span><span class="mi">1</span><span class="w">
+  </span><span class="p">},</span><span class="w">
+  </span><span class="nt">"scheduling"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+    </span><span class="nt">"unreachableStrategy"</span><span class="p">:</span><span class="w"> </span><span class="s2">"disabled"</span><span class="p">,</span><span class="w">
+    </span><span class="nt">"upgrade"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+      </span><span class="nt">"minimumHealthCapacity"</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w">
+      </span><span class="nt">"maximumOverCapacity"</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="w">
+    </span><span class="p">}</span><span class="w">
+  </span><span class="p">},</span><span class="w">
+  </span><span class="nt">"containers"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="w">
+    </span><span class="p">{</span><span class="w">
+      </span><span class="nt">"name"</span><span class="p">:</span><span class="w"> </span><span class="s2">"container1"</span><span class="p">,</span><span class="w">
+      </span><span class="nt">"exec"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+        </span><span class="nt">"command"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+          </span><span class="nt">"shell"</span><span class="p">:</span><span class="w"> </span><span class="s2">"cd $MESOS_SANDBOX &amp;&amp; echo 'hello' &gt;&gt; pst1/foo &amp;&amp; /opt/mesosphere/bin/python -m http.server $EP_HOST_HTTPCT1"</span><span class="w">
+        </span><span class="p">}</span><span class="w">
+      </span><span class="p">},</span><span class="w">
+      </span><span class="nt">"resources"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+        </span><span class="nt">"cpus"</span><span class="p">:</span><span class="w"> </span><span class="mf">0.1</span><span class="p">,</span><span class="w">
+        </span><span class="nt">"mem"</span><span class="p">:</span><span class="w"> </span><span class="mi">128</span><span class="w">
+      </span><span class="p">},</span><span class="w">
+      </span><span class="nt">"endpoints"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="w">
+        </span><span class="p">{</span><span class="w">
+          </span><span class="nt">"name"</span><span class="p">:</span><span class="w"> </span><span class="s2">"httpct1"</span><span class="p">,</span><span class="w">
+          </span><span class="nt">"hostPort"</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w">
+          </span><span class="nt">"protocol"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="w">
+            </span><span class="s2">"tcp"</span><span class="w">
+          </span><span class="p">]</span><span class="w">
+        </span><span class="p">}</span><span class="w">
+      </span><span class="p">],</span><span class="w">
+      </span><span class="nt">"volumeMounts"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="w">
+        </span><span class="p">{</span><span class="w">
+          </span><span class="nt">"name"</span><span class="p">:</span><span class="w"> </span><span class="s2">"pst"</span><span class="p">,</span><span class="w">
+          </span><span class="nt">"mountPath"</span><span class="p">:</span><span class="w"> </span><span class="s2">"pst1"</span><span class="p">,</span><span class="w">
+          </span><span class="nt">"readOnly"</span><span class="p">:</span><span class="w"> </span><span class="kc">false</span><span class="w">
+        </span><span class="p">}</span><span class="w">
+      </span><span class="p">],</span><span class="w">
+      </span><span class="nt">"lifecycle"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+        </span><span class="nt">"killGracePeriodSeconds"</span><span class="p">:</span><span class="w"> </span><span class="mi">60</span><span class="w">
+      </span><span class="p">}</span><span class="w">
+    </span><span class="p">},</span><span class="w">
+    </span><span class="p">{</span><span class="w">
+      </span><span class="nt">"name"</span><span class="p">:</span><span class="w"> </span><span class="s2">"container2"</span><span class="p">,</span><span class="w">
+      </span><span class="nt">"exec"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+        </span><span class="nt">"command"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+          </span><span class="nt">"shell"</span><span class="p">:</span><span class="w"> </span><span class="s2">"cd $MESOS_SANDBOX &amp;&amp; /opt/mesosphere/bin/python -m http.server $EP_HOST_HTTPCT2"</span><span class="w">
+        </span><span class="p">}</span><span class="w">
+      </span><span class="p">},</span><span class="w">
+      </span><span class="nt">"resources"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+        </span><span class="nt">"cpus"</span><span class="p">:</span><span class="w"> </span><span class="mf">0.1</span><span class="p">,</span><span class="w">
+        </span><span class="nt">"mem"</span><span class="p">:</span><span class="w"> </span><span class="mi">128</span><span class="w">
+      </span><span class="p">},</span><span class="w">
+      </span><span class="nt">"endpoints"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="w">
+        </span><span class="p">{</span><span class="w">
+          </span><span class="nt">"name"</span><span class="p">:</span><span class="w"> </span><span class="s2">"httpct2"</span><span class="p">,</span><span class="w">
+          </span><span class="nt">"hostPort"</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w">
+          </span><span class="nt">"protocol"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="w">
+            </span><span class="s2">"tcp"</span><span class="w">
+          </span><span class="p">]</span><span class="w">
+        </span><span class="p">}</span><span class="w">
+      </span><span class="p">],</span><span class="w">
+      </span><span class="nt">"volumeMounts"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="w">
+        </span><span class="p">{</span><span class="w">
+          </span><span class="nt">"name"</span><span class="p">:</span><span class="w"> </span><span class="s2">"pst"</span><span class="p">,</span><span class="w">
+          </span><span class="nt">"mountPath"</span><span class="p">:</span><span class="w"> </span><span class="s2">"pst2"</span><span class="p">,</span><span class="w">
+          </span><span class="nt">"readOnly"</span><span class="p">:</span><span class="w"> </span><span class="kc">false</span><span class="w">
+        </span><span class="p">}</span><span class="w">
+      </span><span class="p">],</span><span class="w">
+      </span><span class="nt">"lifecycle"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+        </span><span class="nt">"killGracePeriodSeconds"</span><span class="p">:</span><span class="w"> </span><span class="mi">60</span><span class="w">
+      </span><span class="p">}</span><span class="w">
+    </span><span class="p">}</span><span class="w">
+  </span><span class="p">],</span><span class="w">
+  </span><span class="nt">"networks"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="w">
+    </span><span class="p">{</span><span class="w">
+      </span><span class="nt">"mode"</span><span class="p">:</span><span class="w"> </span><span class="s2">"host"</span><span class="w">
+    </span><span class="p">}</span><span class="w">
+  </span><span class="p">]</span><span class="w">
+</span><span class="p">}</span><span class="w">
+</span></code></pre>
+</div>
+
 <h3 id="inspecting-and-deleting-suspended-stateful-tasks">Inspecting and deleting suspended stateful tasks</h3>
 
 <p>In order to destroy and clean up persistent volumes and free the reserved resources associated with a task, perform 2 steps:</p>
@@ -648,7 +813,7 @@ http DELETE http://dcos/service/marathon/v2/apps/postgres/tasks/postgres.53ab873
 
           <footer>
             <p class="text-muted">
-              &copy; 2016 <a class="text-muted" href="http://mesosphere.com">Mesosphere, Inc.</a>
+              &copy; 2018 <a class="text-muted" href="http://mesosphere.com">Mesosphere, Inc.</a>
             </p>
           </footer>
         </div>

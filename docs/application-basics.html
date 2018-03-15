@@ -31,7 +31,7 @@
                   <span class="icon-bar"></span>
                   <span class="icon-bar"></span>
                 </button>
-                <a class="navbar-brand" href="/marathon/">Marathon</a>
+                <a class="navbar-brand" href="/marathon">Marathon</a>
               </div>
               <div class="collapse navbar-collapse" id="navbar-collapse">
                 <ul class="nav navbar-nav">
@@ -47,7 +47,7 @@
                 </ul>
                 <div class="grid" id="searchBar">
                   <div id="search">
-                    <form role="search" method="get" action="/marathon//search/">
+                    <form role="search" method="get" action="/marathon/search/">
                       <input id="searchString" name="searchString"
                              placeholder="Search Marathon Docs" type="text">
                       <input id="searchButton" name="googleSearchName" type="submit" value="Search">
@@ -191,6 +191,11 @@
                 </a>
             </li>
             <li>
+                <a href="/marathon/docs/data-migration.html">
+                    Data Migration
+                </a>
+            </li>
+            <li>
                 <a href="/marathon/docs/framework-authentication.html">
                     Framework Authentication
                 </a>
@@ -223,6 +228,11 @@
             <li>
                 <a href="/marathon/docs/native-docker-private-registry.html">
                     Using a Private Docker Registry
+                </a>
+            </li>
+            <li>
+                <a href="/marathon/docs/maintenance-mode.html">
+                    Maintenance mode
                 </a>
             </li>
         </ul>
@@ -273,6 +283,11 @@
                     Error Reading Authentication Secret
                 </a>
             </li>
+            <li>
+                <a href="/marathon/docs/cfs.html">
+                    Slow Docker apps and deployments
+                </a>
+            </li>
         </ul>
 
         <h5>Development</h5>
@@ -307,9 +322,13 @@
         </ul>
         <h5>Docs for Previous Versions</h5>
         <ul class="list-unstyled">
-          <li><a href="https://github.com/mesosphere/marathon/tree/v1.4.0/docs/docs">Version 1.4.0</a></li>
-          <li><a href="https://github.com/mesosphere/marathon/tree/v1.3.0/docs/docs">Version 1.3.0</a></li>
-          <li><a href="https://github.com/mesosphere/marathon/tree/v1.1.0/docs/docs">Version 1.1.0</a></li>
+            
+            <li><a href="/marathon/1.6/docs">Version 1.6.x</a></li>
+            
+            <li><a href="/marathon/1.5/docs">Version 1.5.x</a></li>
+            
+            <li><a href="/marathon/1.4/docs">Version 1.4.x</a></li>
+            
         </ul>
     </div>
 
@@ -346,28 +365,39 @@ You would use the following JSON application definition to describe the applicat
 
 <h2 id="using-resources-in-applications">Using Resources in Applications</h2>
 
-<p>To run any non-trivial application, you typically depend on a collection of resources: files and/or archives of files. To manage resource allocation, Marathon has the concept of URIs. URIs use the Mesos fetcher to do the legwork in terms of downloading (and potentially) extracting resources.</p>
+<p>To run any non-trivial application, you typically depend on a collection of resources: files and/or archives of files. 
+To manage resource allocation, Marathon uses the <a href="http://mesos.apache.org/documentation/latest/fetcher/">Mesos fetcher</a> 
+to do the legwork in terms of downloading (and potentially) extracting resources.</p>
 
 <p>Before we dive into this topic, let’s have a look at an example:</p>
 
 <div class="language-json highlighter-rouge"><pre class="highlight"><code><span class="p">{</span><span class="w">
     </span><span class="nt">"id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"basic-1"</span><span class="p">,</span><span class="w"> 
-    </span><span class="nt">"cmd"</span><span class="p">:</span><span class="w"> </span><span class="s2">"`chmod u+x cool-script.sh &amp;&amp; ./cool-script.sh`"</span><span class="p">,</span><span class="w">
+    </span><span class="nt">"cmd"</span><span class="p">:</span><span class="w"> </span><span class="s2">"`./cool-script.sh`"</span><span class="p">,</span><span class="w">
     </span><span class="nt">"cpus"</span><span class="p">:</span><span class="w"> </span><span class="mf">0.1</span><span class="p">,</span><span class="w">
     </span><span class="nt">"mem"</span><span class="p">:</span><span class="w"> </span><span class="mf">10.0</span><span class="p">,</span><span class="w">
     </span><span class="nt">"instances"</span><span class="p">:</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w">
-    </span><span class="nt">"uris"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="w">
-        </span><span class="s2">"https://example.com/app/cool-script.sh"</span><span class="w">
+    </span><span class="nt">"fetch"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="w">
+        </span><span class="p">{</span><span class="w">
+          </span><span class="nt">"uri"</span><span class="p">:</span><span class="w"> </span><span class="s2">"https://example.com/app/cool-script.sh"</span><span class="p">,</span><span class="w">
+          </span><span class="nt">"executable"</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span><span class="w">
+        </span><span class="p">}</span><span class="w">
     </span><span class="p">]</span><span class="w">
 </span><span class="p">}</span><span class="w">
 </span></code></pre>
 </div>
 
-<p>What the example above does: before executing the <code class="highlighter-rouge">cmd</code>, download the resource <code class="highlighter-rouge">https://example.com/app/cool-script.sh</code> (via Mesos) and make it available in the application task’s sandbox. You can check that these have been downloaded by visiting the Mesos UI and clicking into a Mesos worker node’s sandbox where you should now find <code class="highlighter-rouge">cool-script.sh</code>.</p>
+<p>What the example above does: before executing the <code class="highlighter-rouge">cmd</code>, download the resource <code class="highlighter-rouge">https://example.com/app/cool-script.sh</code> 
+(via Mesos) and make it available in the application task’s sandbox. You can check that these have been downloaded by 
+visiting the Mesos UI and clicking into a Mesos agent node’s sandbox where you should now find <code class="highlighter-rouge">cool-script.sh</code>.</p>
 
-<p><strong>Note:</strong> As of Mesos v0.22 and above, the fetcher code does not make downloaded files executable by default. In the example above, <code class="highlighter-rouge">cmd</code> first makes the file executable.</p>
+<p>As of Mesos v0.22 and above, the fetcher code does not make downloaded files executable by default.
+ In the example above, we provided the field <code class="highlighter-rouge">"executable": true</code> to tell Mesos change the fetch result to 
+ executable for every user. If the <code class="highlighter-rouge">"executable"</code> field is <code class="highlighter-rouge">"true"</code>, the <code class="highlighter-rouge">"extract"</code> field is ignored and has no effect.</p>
 
-<p>As already mentioned above, Marathon also <a href="https://github.com/mesosphere/marathon/blob/master/src/main/scala/mesosphere/mesos/TaskBuilder.scala">knows how to handle</a> application resources that reside in archives. Currently, Marathon will (via Mesos and before executing the <code class="highlighter-rouge">cmd</code>) first attempt to unpack/extract resources with the following file extensions:</p>
+<p>As already mentioned above, Marathon also <a href="https://github.com/mesosphere/marathon/blob/master/src/main/scala/mesosphere/mesos/TaskBuilder.scala">knows how to handle</a> 
+application resources that reside in archives. By default, Marathon will (via Mesos and before executing the <code class="highlighter-rouge">cmd</code>) 
+first attempt to unpack/extract resources with the following file extensions:</p>
 
 <ul>
   <li><code class="highlighter-rouge">.tgz</code></li>
@@ -379,7 +409,10 @@ You would use the following JSON application definition to describe the applicat
   <li><code class="highlighter-rouge">.zip</code></li>
 </ul>
 
-<p>And how this looks in practice shows you the following example: let’s assume you have an application executable in a zip file at <code class="highlighter-rouge">https://example.com/app.zip</code>. This zip file contains the script <code class="highlighter-rouge">cool-script.sh</code> and that’s what you want to execute. Here’s how:</p>
+<p>To prevent this behaviour, field <code class="highlighter-rouge">"extract": false</code> must be provided.</p>
+
+<p>And how this looks in practice shows you the following example: let’s assume you have an application executable in a zip
+ file at <code class="highlighter-rouge">https://example.com/app.zip</code>. This zip file contains the script <code class="highlighter-rouge">cool-script.sh</code> and that’s what you want to execute. Here’s how:</p>
 
 <div class="language-json highlighter-rouge"><pre class="highlight"><code><span class="p">{</span><span class="w">
     </span><span class="nt">"id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"basic-2"</span><span class="p">,</span><span class="w"> 
@@ -387,8 +420,10 @@ You would use the following JSON application definition to describe the applicat
     </span><span class="nt">"cpus"</span><span class="p">:</span><span class="w"> </span><span class="mf">0.1</span><span class="p">,</span><span class="w">
     </span><span class="nt">"mem"</span><span class="p">:</span><span class="w"> </span><span class="mf">10.0</span><span class="p">,</span><span class="w">
     </span><span class="nt">"instances"</span><span class="p">:</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w">
-    </span><span class="nt">"uris"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="w">
-        </span><span class="s2">"https://example.com/app.zip"</span><span class="w">
+    </span><span class="nt">"fetch"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="w">
+        </span><span class="p">{</span><span class="w">
+          </span><span class="nt">"uri"</span><span class="p">:</span><span class="w"> </span><span class="s2">"https://example.com/app.zip"</span><span class="w">
+        </span><span class="p">}</span><span class="w">
     </span><span class="p">]</span><span class="w">
 </span><span class="p">}</span><span class="w">
 </span></code></pre>
@@ -396,12 +431,68 @@ You would use the following JSON application definition to describe the applicat
 
 <p>Note that in contrast to the example <code class="highlighter-rouge">basic-1</code> we now have a <code class="highlighter-rouge">cmd</code> that looks as follows: <code class="highlighter-rouge">app/cool-script.sh</code>. This stems from the fact that when the zip file gets downloaded and extracted, a directory <code class="highlighter-rouge">app</code> according to the file name <code class="highlighter-rouge">app.zip</code> is created where the content of the zip file is extracted into.</p>
 
-<p>Note also that you can specify many resources, not only one. So, for example, you could provide a git repository and some resources from a CDN as follows:</p>
+<p>Additionally, if you want to use a fetcher cache, <code class="highlighter-rouge">"cache": true</code> field must be specified. If a URI is encountered 
+for the first time (for the same user), it is first downloaded into the cache, then copied to the sandbox directory 
+from there. If the same URI is encountered again, and a corresponding cache file is resident in the cache or 
+still en route into the cache, then downloading is omitted and the fetcher proceeds directly to copying from the cache.
+Caching is working locally on every agent, so if the task is restarted on a different node, resources will be fetched again.</p>
+
+<div class="language-json highlighter-rouge"><pre class="highlight"><code><span class="p">{</span><span class="w">
+    </span><span class="nt">"id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"basic-3"</span><span class="p">,</span><span class="w"> 
+    </span><span class="nt">"cmd"</span><span class="p">:</span><span class="w"> </span><span class="s2">"app/cool-script.sh"</span><span class="p">,</span><span class="w">
+    </span><span class="nt">"cpus"</span><span class="p">:</span><span class="w"> </span><span class="mf">0.1</span><span class="p">,</span><span class="w">
+    </span><span class="nt">"mem"</span><span class="p">:</span><span class="w"> </span><span class="mf">10.0</span><span class="p">,</span><span class="w">
+    </span><span class="nt">"instances"</span><span class="p">:</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w">
+    </span><span class="nt">"fetch"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="w">
+        </span><span class="p">{</span><span class="w">
+          </span><span class="nt">"uri"</span><span class="p">:</span><span class="w"> </span><span class="s2">"https://example.com/app.zip"</span><span class="p">,</span><span class="w">
+          </span><span class="nt">"cache"</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span><span class="w">
+        </span><span class="p">}</span><span class="w">
+    </span><span class="p">]</span><span class="w">
+</span><span class="p">}</span><span class="w">
+</span></code></pre>
+</div>
+
+<p>It’s also possible to specify path and name of the destination where the fetched resource will be stored:</p>
+
+<div class="language-json highlighter-rouge"><pre class="highlight"><code><span class="p">{</span><span class="w">
+    </span><span class="nt">"id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"basic-4"</span><span class="p">,</span><span class="w"> 
+    </span><span class="nt">"cmd"</span><span class="p">:</span><span class="w"> </span><span class="s2">"./cool-script.sh"</span><span class="p">,</span><span class="w">
+    </span><span class="nt">"cpus"</span><span class="p">:</span><span class="w"> </span><span class="mf">0.1</span><span class="p">,</span><span class="w">
+    </span><span class="nt">"mem"</span><span class="p">:</span><span class="w"> </span><span class="mf">10.0</span><span class="p">,</span><span class="w">
+    </span><span class="nt">"instances"</span><span class="p">:</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w">
+    </span><span class="nt">"fetch"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="w">
+        </span><span class="p">{</span><span class="w">
+          </span><span class="nt">"uri"</span><span class="p">:</span><span class="w"> </span><span class="s2">"https://example.com/some-script.sh"</span><span class="p">,</span><span class="w">
+          </span><span class="nt">"destPath"</span><span class="p">:</span><span class="w"> </span><span class="s2">"cool-script.sh"</span><span class="w">
+        </span><span class="p">}</span><span class="w">
+    </span><span class="p">]</span><span class="w">
+</span><span class="p">}</span><span class="w">
+</span></code></pre>
+</div>
+
+<p>Note also that you can specify many resources, not just one. So, for example, you could provide a git repository
+ and some resources from a CDN as follows:</p>
 
 <div class="language-json highlighter-rouge"><pre class="highlight"><code><span class="p">{</span><span class="w">
     </span><span class="err">...</span><span class="w">
-    </span><span class="nt">"uris"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="w">
-        </span><span class="s2">"https://git.example.com/repo-app.zip"</span><span class="p">,</span><span class="w"> </span><span class="s2">"https://cdn.example.net/my-file.jpg"</span><span class="p">,</span><span class="w"> </span><span class="s2">"https://cdn.example.net/my-other-file.css"</span><span class="w">
+    </span><span class="nt">"fetch"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="w">
+        </span><span class="p">{</span><span class="w">
+          </span><span class="nt">"uri"</span><span class="p">:</span><span class="w"> </span><span class="s2">"https://git.example.com/repo-app.zip"</span><span class="w">
+        </span><span class="p">},</span><span class="w">
+        </span><span class="p">{</span><span class="w">
+          </span><span class="nt">"uri"</span><span class="p">:</span><span class="w"> </span><span class="s2">"https://git.example.com/docs-bundle.zip"</span><span class="p">,</span><span class="w">
+          </span><span class="nt">"extract"</span><span class="p">:</span><span class="w"> </span><span class="kc">false</span><span class="w">
+        </span><span class="p">},</span><span class="w">
+        </span><span class="p">{</span><span class="w">
+          </span><span class="nt">"uri"</span><span class="p">:</span><span class="w"> </span><span class="s2">"https://cdn.example.net/my-file.jpg"</span><span class="p">,</span><span class="w">
+          </span><span class="nt">"cache"</span><span class="p">:</span><span class="w"> </span><span class="kc">false</span><span class="w">
+        </span><span class="p">},</span><span class="w">
+        </span><span class="p">{</span><span class="w">
+          </span><span class="nt">"uri"</span><span class="p">:</span><span class="w"> </span><span class="s2">"https://cdn.example.net/my-other-file.css"</span><span class="p">,</span><span class="w">
+          </span><span class="nt">"cache"</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span><span class="w">
+        </span><span class="p">}</span><span class="w">
+          
     </span><span class="p">]</span><span class="w">
     </span><span class="err">...</span><span class="w">
 </span><span class="p">}</span><span class="w">
@@ -470,7 +561,7 @@ You would use the following JSON application definition to describe the applicat
 
           <footer>
             <p class="text-muted">
-              &copy; 2016 <a class="text-muted" href="http://mesosphere.com">Mesosphere, Inc.</a>
+              &copy; 2018 <a class="text-muted" href="http://mesosphere.com">Mesosphere, Inc.</a>
             </p>
           </footer>
         </div>
