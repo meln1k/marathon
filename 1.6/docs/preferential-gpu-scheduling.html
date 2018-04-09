@@ -4,7 +4,7 @@
     
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Marathon: Stuck App or Pod Deployment</title>
+    <title>Marathon: Preferential GPU Scheduling</title>
     <link rel="icon" type="image/x-icon" href="/marathon/1.6/img/marathon-favicon.ico">
     <link href="//cdn.jsdelivr.net/bootstrap/3.2.0/css/bootstrap.min.css" rel="stylesheet">
     <link href="/marathon/1.6/css/style.css" rel="stylesheet">
@@ -334,62 +334,108 @@
     </div>
 
     <div class="col-sm-9">
-        <h1 id="stuck-app-or-pod-deployments">Stuck App or Pod Deployments</h1>
+        <h1 id="preferential-gpu-scheduling">Preferential GPU Scheduling</h1>
 
-<p>Apps or pods often fail to deploy because the resource offers from Mesos do not match or cannot match the resources the app or pod requests in the application or pod definition. Below is an overview of the offer matching process.</p>
+<h2 id="overview-of-gpu-scheduling-in-marathon">Overview of GPU Scheduling in Marathon</h2>
 
-<h1 id="how-offer-matching-works">How Offer Matching Works</h1>
+<p>Marathon supports launching GPU tasks when the command-line option <code class="highlighter-rouge">--enable_features gpu_resources</code> is specified. Depending on the GPU availability, it may be desirable to configure Marathon to avoid placing non-GPU tasks on GPU nodes.</p>
 
-<ol>
-  <li>
-    <p>You post an application or pod definition to Marathon. The application or pod specifies resource requirements and/or placement constraints as well as the number of instances to launch.</p>
-  </li>
-  <li>
-    <p>Marathon adds the new app or pod to the launch queue.</p>
-  </li>
-  <li>
-    <p>Every 5 seconds (by default), Mesos sends one offer per agent.</p>
-  </li>
-  <li>
-    <p>For each resource offer, Marathon checks if there is an app or pod in the launch queue whose requirements all match the offer. If Marathon finds an app or pod whose requirements and constraints match the offer, Marathon will launch the app or pod.</p>
-  </li>
-  <li>
-    <p>If an offer never arrives that matches an application or pod’s requirements and constraints, Marathon will not be able to launch the app or pod.</p>
-  </li>
-</ol>
+<h2 id="parameters-in-marathon--mesos">Parameters in Marathon / Mesos</h2>
 
-<p><strong>Note:</strong> The required resources (such as CPU, Mem, Disk, and Ports) must all be available on a single host.</p>
+<p>In order to enable GPU support in your cluster, you should be cognizant configure the following command-line launch parameters for Mesos and Marathon.</p>
 
-<h1 id="why-your-app-or-pod-is-stuck">Why Your App or Pod is Stuck</h1>
-
-<p>There are several reasons why your app or pod may fail to deploy. Some possibilities include:</p>
+<p>Mesos Master:</p>
 
 <ul>
-  <li>
-    <p>Marathon isn’t getting the resource offers it needs to launch the app.
-If you are using DC/OS, use the <a href="https://docs.mesosphere.com/1.11/monitoring/debugging/cli-debugging/">CLI</a> debug subcommands or the <a href="https://docs.mesosphere.com/1.11/monitoring/debugging/gui-debugging/">debugging page in the DC/OS web interface</a> to troubleshoot unmatched or unaccepted resource offers from Mesos. You can also <a href="https://docs.mesosphere.com/1.11/monitoring/logging/">consult the service and task logs</a>.</p>
+  <li><code class="highlighter-rouge">--filter_gpu_resources</code> - Only send offers for nodes containing GPUs to frameworks that opt-in to GPU resources (e.g. <code class="highlighter-rouge">marathon --enable_features gpu_resources</code>).</li>
+  <li><code class="highlighter-rouge">--no-filter_gpu_resources</code> - Send offers for nodes containing GPUs to all frameworks, regardless of GPU opt-in status.</li>
+</ul>
 
-    <p>Otherwise, consult the Marathon UI and the Mesos UI to see the health and resource use of your app or pod.</p>
-  </li>
-  <li>
-    <p>The app or pod’s health check is failing.
-If a an app or pod has a health check, deployment does not complete until the health check passes. You can see the health of an app or pod from the Marathon UI.</p>
-  </li>
-  <li>
-    <p><code class="highlighter-rouge">docker pull</code> is failing.
-If your app runs in a Docker image, the Mesos agent node will first have to pull the Docker image. If this fails, your app could get stuck in a “deploying” state. The Mesos agent logs (<code class="highlighter-rouge">&lt;dcos-url&gt;/mesos/#/agents/</code>) will contain this information. You will see an error in the log similar to the following.</p>
+<p>Marathon:</p>
 
-    <div class="highlighter-rouge"><pre class="highlight"><code>6b50d4f5-05d6-4b99-bb63-115d5acd2aca-0000 failed to start: Failed to run 'docker -H unix:///var/run/docker.sock pull /mybadimage/fakeimage:latest': exited with status 1; stderr='Error parsing reference: "/mybadimage/fakeimage:latest" is not a valid repository/tag
-</code></pre>
-    </div>
-  </li>
-  <li>
-    <p>Your application, application group, or pod definition is otherwise badly configured.
-You can use the <a href="https://github.com/dcos-labs/marathon-validate">marathon-validate</a> script to validate an app or group definition locally, before you deploy it to DC/OS.</p>
+<ul>
+  <li><code class="highlighter-rouge">--enable_features gpu_resources</code> - Tell Mesos that Marathon should be offered GPU resources. (See the <a href="./command-line-flags.html">command-line docs</a>).</li>
+  <li><code class="highlighter-rouge">--gpu_scheduling_behavior</code> - Defines how offered GPU resources should be treated. Possible settings:
+    <ul>
+      <li><code class="highlighter-rouge">unrestricted</code> (Default) - non-GPU tasks are launched irrespective of offers containing GPUs.</li>
+      <li><code class="highlighter-rouge">undefined</code> - The same as <code class="highlighter-rouge">unrestricted</code>, but logs a warning when a GPU resource containing offer is used for a non-GPU task.</li>
+      <li><code class="highlighter-rouge">restricted</code> - non-GPU tasks will decline offers containing GPUs. A decline reason of <code class="highlighter-rouge">DeclinedScareResources</code> is given.</li>
+    </ul>
   </li>
 </ul>
 
-<p>If you do not find the solution yourself and you create a Github issue, append the output of Mesos <code class="highlighter-rouge">/state</code> endpoint to the bug report so that we can inspect available cluster resources.</p>
+<h2 id="enumeration-of-different-possible-cluster-scenarios">Enumeration of Different Possible Cluster Scenarios</h2>
+
+<p>You may fall under one of the following configuration scenarios:</p>
+
+<ol>
+  <li><strong>No GPUs</strong></li>
+  <li><strong>Scarce GPUs</strong> - only a few nodes have GPUs.</li>
+  <li><strong>Abundant GPUs</strong> - most or every node has a GPU.</li>
+</ol>
+
+<p>Further, if your cluster has GPUs:</p>
+
+<p>a. Marathon will directly launch GPU tasks (and, perhaps, also launch frameworks that launch GPU tasks).
+b. Marathon will <strong>not</strong> launch GPU tasks - While Marathon may launch a GPU framework (such as Tensorflow) which launches GPU tasks, Marathon will not directly launch GPU tasks itself.</p>
+
+<p>If GPUs are abundant, Marathon should be able to place non-GPU tasks on nodes containing GPUs. Otherwise, you might risk not being able to deploy non-GPU tasks.</p>
+
+<p>If GPUs are scarce, Marathon should avoid placing non-GPU tasks on nodes containing GPUs. Otherwise, GPU tasks may not launch if the memory/CPU resources on GPU containing nodes are consumed by non-GPU tasks.</p>
+
+<p>With that in mind, the following list of scenarios and suggested GPU param configuration should help guide your cluster configuration:</p>
+
+<ul>
+  <li>(1 ) No GPUs
+    <ul>
+      <li><code class="highlighter-rouge">mesos-master ...</code></li>
+      <li><code class="highlighter-rouge">marathon ...</code></li>
+    </ul>
+  </li>
+  <li>(2a) Scarce GPUs, Marathon will directly launch GPU tasks
+    <ul>
+      <li><code class="highlighter-rouge">mesos-master --filter_gpu_resources ...</code></li>
+      <li><code class="highlighter-rouge">marathon --enable_features gpu_resources --gpu_scheduling_behavior restricted ...</code></li>
+    </ul>
+  </li>
+  <li>(2b) Scarce GPUs, Marathon will <strong>not</strong> launch GPU tasks
+    <ul>
+      <li><code class="highlighter-rouge">mesos-master --filter_gpu_resources ...</code></li>
+      <li><code class="highlighter-rouge">marathon ...</code></li>
+    </ul>
+  </li>
+  <li>(3a) Abundant GPUs, Marathon will directly launch GPU tasks
+    <ul>
+      <li><code class="highlighter-rouge">mesos-master --no-filter_gpu_resources ...</code></li>
+      <li><code class="highlighter-rouge">marathon --enable_features gpu_resources --gpu_scheduling_behavior unrestricted ...</code></li>
+    </ul>
+  </li>
+  <li>(3b) Abundant GPUs, Marathon will <strong>not</strong> launch GPU tasks
+    <ul>
+      <li><code class="highlighter-rouge">mesos-master --no-filter_gpu_resources ...</code></li>
+      <li><code class="highlighter-rouge">marathon ...</code></li>
+    </ul>
+  </li>
+</ul>
+
+<h2 id="caveats--edge-cases">Caveats / Edge Cases</h2>
+
+<p>Please be aware of the important following edge cases applicable to Marathon <code class="highlighter-rouge">--gpu_scheduling_behavior restricted</code></p>
+
+<h3 id="nodes-that-have-all-gpus-consumed-treated-as-non-gpu-nodes">Nodes That Have All GPUs Consumed Treated as Non-GPU Nodes</h3>
+
+<p>When a GPU node has all GPU resources consumed (either reserved for other roles, or used by running tasks), Marathon will treat it as a non-GPU node and will proceed to place non-GPU tasks on it. This is because makes GPU placement decisions based off of resources offered, and if no GPUs are available for the role as which Marathon is registered, or the role <code class="highlighter-rouge">*</code>, then Marathon will see no GPUs.</p>
+
+<p>If you reserve your GPUs for a non-Marathon role (e.g. Tensorflow), be sure to reserve CPU, disc, and memory resources, also for that role.</p>
+
+<h3 id="non-gpu-resident-tasks-will-ignore-gpu-scheduling-behavior-when-relaunching">Non-GPU Resident Tasks Will Ignore GPU Scheduling Behavior When Relaunching</h3>
+
+<p>If a resident task (has persistent volumes) that does not use GPUs is launched on a GPU resource containing node, then it will be relaunched, regardless of the setting of <code class="highlighter-rouge">--gpu_scheduling_behavior</code>. A resident task could launch on a GPU resource node, even though <code class="highlighter-rouge">--gpu_scheduling_behavior restricted</code> specified under the following scenarios:</p>
+
+<ol>
+  <li>The resident task is launched while the <code class="highlighter-rouge">--gpu_scheduling_behavior restricted</code> is unset, and then the flag is changed and Marathon is restarted.</li>
+  <li>The resident task is launched while all GPU resources on the GPU node are consumed (as outlined in the prior caveat).</li>
+</ol>
 
     </div>
 </div>
