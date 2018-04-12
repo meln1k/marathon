@@ -2,6 +2,19 @@
 Bugfix release
 
 ### Closed issues
+ - "changelog update for 1.5.9"
+ - Merge pull request #4 from meln1k/changelog-update-1.5.9
+ - "changelog update for 1.5.9"
+ - Merge pull request #3 from meln1k/changelog-update-1.5.9
+ - "changelog update for 1.5.9"
+ - Merge pull request #2 from meln1k/changelog-update-1.5.9
+ - "changelog update for 1.5.9"
+
+
+## Changes from v1.5.8 to 1.5.9
+Bugfix release
+
+### Closed issues
  - Merge pull request #3 from meln1k/changelog-update-1.5.9
  - "changelog update for 1.5.9"
  - "changelog update for 1.5.9"
