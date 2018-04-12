@@ -1,3 +1,10 @@
+## Changes from v1.5.8 to 1.5.9
+Bugfix release
+
+### Closed issues
+ - 1.5 update
+
+
 ## Changes from 1.5.7 to 1.5.8
 Bugfix release
 
