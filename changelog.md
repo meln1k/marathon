@@ -1,3 +1,10 @@
+## Changes from v1.5.12 to 1.5.13
+Bugfix release
+
+### Closed issues
+ - [MARATHON-1123](https://jira.mesosphere.com/browse/MARATHON-1123) new fancy Feature!
+
+
 ## Changes from v1.5.11 to 1.5.12
 Bugfix release
 
