@@ -2,6 +2,15 @@
 Bugfix release
 
 ### Closed issues
+ - Merge branch 'releases/1.5' of github.com:meln1k/marathon into releases/1.5
+ - Merge pull request #1 from meln1k/changelog-update-1.5.9
+ - "changelog update for 1.5.9"
+
+
+## Changes from v1.5.8 to 1.5.9
+Bugfix release
+
+### Closed issues
  - 1.5 update
 
 
