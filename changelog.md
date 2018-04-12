@@ -1,3 +1,10 @@
+## Changes from v1.5.9 to 1.5.10
+Bugfix release
+
+### Closed issues
+ - new awesome fix
+
+
 ## Changes from v1.5.8 to 1.5.9
 Bugfix release
 
