@@ -1,3 +1,10 @@
+## Changes from v1.5.13 to 1.5.14
+Bugfix release
+
+### Closed issues
+ - [MARATHON-31337](https://jira.mesosphere.com/browse/MARATHON-31337) Another Fancy Feature!
+
+
 ## Changes from v1.5.12 to 1.5.13
 Bugfix release
 
