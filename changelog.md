@@ -1,3 +1,11 @@
+## Changes from v1.5.14 to 1.5.15
+Bugfix release
+
+### Closed issues
+ - Merge branch 'releases/1.5' of github.com:meln1k/marathon into releases/1.5
+ - [MARATHON-1111](https://jira.mesosphere.com/browse/MARATHON-1111) New feature!
+
+
 ## Changes from v1.5.13 to 1.5.14
 Bugfix release
 
