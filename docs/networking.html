@@ -177,6 +177,11 @@
                     Secret Configuration
                 </a>
             </li>
+            <li>
+                <a href="/marathon/docs/unreachable.html">
+                    Unreachable Strategy
+                </a>
+            </li>
         </ul>
 
         <h5>Administration</h5>
@@ -234,6 +239,11 @@
             <li>
                 <a href="/marathon/docs/maintenance-mode.html">
                     Maintenance mode
+                </a>
+            </li>
+            <li>
+                <a href="/marathon/docs/mesos-compatibility.html">
+                    Compatibility with Mesos
                 </a>
             </li>
         </ul>
@@ -344,7 +354,7 @@
 
 <h3 id="vips">VIPs</h3>
 
-<p>If you are running Marathon within a <a href="https://dcos.io/get-started">DC/OS cluster</a>, you can use <a href="https://dcos.io/docs/1.8/usage/service-discovery/virtual-ip-addresses/">virtual addresses (VIPs)</a> to make ports management easier.
+<p>If you are running Marathon within a <a href="https://dcos.io/get-started">DC/OS cluster</a>, you can use <a href="https://docs.mesosphere.com/latest/networking/load-balancing-vips/">virtual addresses (VIPs)</a> to make ports management easier.
 VIPs simplify inter-app communication and implement a reliable service-oriented architecture.
 VIPs map traffic from a single virtual address to multiple IP addresses and ports.</p>
 
@@ -463,7 +473,7 @@ If you choose your own service port, you must ensure that it is unique across al
 
 <p>The service port is metadata; Marathon does not do anything with this information except track it and provide it to a load balancer. The DevOps team setting up this service is expected to create a script or provide a means to read the <code class="highlighter-rouge">servicePort</code> and configure the load balancer to route calls to that port (port <code class="highlighter-rouge">8080</code> in this case) to each of the instances of the application. All metadata is queryable from Marathon.</p>
 
-<p>The <a href="https://docs.mesosphere.com/1.10/networking/marathon-lb/">Marathon-LB service</a>, when configured, does exactly this.  Marathon-LB will register all instances of an app and route to its configured <code class="highlighter-rouge">servicePort</code>. Marathon-LB is an HAProxy service with scripts that will register all instances of an app and route to its configured <code class="highlighter-rouge">servicePort</code>. In the configuration in this example, a client will connect to a load balancer at port <code class="highlighter-rouge">8080</code> (<code class="highlighter-rouge">servicePort</code>), which will route (with an algorithm) to <code class="highlighter-rouge">10.0.0.2:31000</code> (<code class="highlighter-rouge">hostPort</code>), which will in turn route to <code class="highlighter-rouge">8080</code> (<code class="highlighter-rouge">containerPort</code>) of the internal application.</p>
+<p>The <a href="https://docs.mesosphere.com/latest/networking/marathon-lb/">Marathon-LB service</a>, when configured, does exactly this.  Marathon-LB will register all instances of an app and route to its configured <code class="highlighter-rouge">servicePort</code>. Marathon-LB is an HAProxy service with scripts that will register all instances of an app and route to its configured <code class="highlighter-rouge">servicePort</code>. In the configuration in this example, a client will connect to a load balancer at port <code class="highlighter-rouge">8080</code> (<code class="highlighter-rouge">servicePort</code>), which will route (with an algorithm) to <code class="highlighter-rouge">10.0.0.2:31000</code> (<code class="highlighter-rouge">hostPort</code>), which will in turn route to <code class="highlighter-rouge">8080</code> (<code class="highlighter-rouge">containerPort</code>) of the internal application.</p>
 
 <h4 id="the-vip0-label-use-case">The <code class="highlighter-rouge">VIP_0</code> Label Use Case</h4>
 
@@ -589,7 +599,7 @@ If you have set <code class="highlighter-rouge">containerPort</code> to <code cl
 
 <h4 id="virtual-addresses">Virtual addresses</h4>
 
-<p>See the DC/OS documentation for <a href="https://dcos.io/docs/1.8/usage/service-discovery/virtual-ip-addresses/">virtual addresses (VIPs)</a>.</p>
+<p>See the DC/OS documentation for <a href="https://docs.mesosphere.com/latest/networking/load-balancing-vips/">virtual addresses (VIPs)</a>.</p>
 
 <h2 id="examples">Examples</h2>
 

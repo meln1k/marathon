@@ -177,6 +177,11 @@
                     Secret Configuration
                 </a>
             </li>
+            <li>
+                <a href="/marathon/docs/unreachable.html">
+                    Unreachable Strategy
+                </a>
+            </li>
         </ul>
 
         <h5>Administration</h5>
@@ -234,6 +239,11 @@
             <li>
                 <a href="/marathon/docs/maintenance-mode.html">
                     Maintenance mode
+                </a>
+            </li>
+            <li>
+                <a href="/marathon/docs/mesos-compatibility.html">
+                    Compatibility with Mesos
                 </a>
             </li>
         </ul>
@@ -367,7 +377,7 @@
 <ul>
   <li>
     <p>Marathon isn’t getting the resource offers it needs to launch the app.
-If you are using DC/OS, use the <a href="https://docs.mesosphere.com/1.11/monitoring/debugging/cli-debugging/">CLI</a> debug subcommands or the <a href="https://docs.mesosphere.com/1.11/monitoring/debugging/gui-debugging/">debugging page in the DC/OS web interface</a> to troubleshoot unmatched or unaccepted resource offers from Mesos. You can also <a href="https://docs.mesosphere.com/1.11/monitoring/logging/">consult the service and task logs</a>.</p>
+If you are using DC/OS, use the <a href="https://docs.mesosphere.com/latest/monitoring/debugging/cli-debugging/">CLI</a> debug subcommands or the <a href="https://docs.mesosphere.com/latest/monitoring/debugging/gui-debugging/">debugging page in the DC/OS web interface</a> to troubleshoot unmatched or unaccepted resource offers from Mesos. You can also <a href="https://docs.mesosphere.com/latest/monitoring/logging/">consult the service and task logs</a>.</p>
 
     <p>Otherwise, consult the Marathon UI and the Mesos UI to see the health and resource use of your app or pod.</p>
   </li>
@@ -385,7 +395,7 @@ If your app runs in a Docker image, the Mesos agent node will first have to pull
   </li>
   <li>
     <p>Your application, application group, or pod definition is otherwise badly configured.
-You can use the <a href="https://github.com/dcos-labs/marathon-validate">marathon-validate</a> script to validate an app or group definition locally, before you deploy it to DC/OS.</p>
+You can use the <a href="https://github.com/dcos-labs/marathon-validate">marathon-validate</a> script to validate an app or group definition locally, before you deploy it to DC/OS. <strong>Warning: This tool is not up-to-date with the current marathon version</strong>.</p>
   </li>
 </ul>
 

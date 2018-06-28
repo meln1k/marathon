@@ -177,6 +177,11 @@
                     Secret Configuration
                 </a>
             </li>
+            <li>
+                <a href="/marathon/1.6/docs/unreachable.html">
+                    Unreachable Strategy
+                </a>
+            </li>
         </ul>
 
         <h5>Administration</h5>
@@ -234,6 +239,11 @@
             <li>
                 <a href="/marathon/1.6/docs/maintenance-mode.html">
                     Maintenance mode
+                </a>
+            </li>
+            <li>
+                <a href="/marathon/1.6/docs/mesos-compatibility.html">
+                    Compatibility with Mesos
                 </a>
             </li>
         </ul>
@@ -388,8 +398,7 @@ health checks consecutively, that <a href="#task-termination">task is terminated
 
 <h3 id="mesos-level-health-checks">Mesos-level health checks</h3>
 
-<p>Mesos-level health checks (<code class="highlighter-rouge">MESOS_HTTP</code>, <code class="highlighter-rouge">MESOS_HTTPS</code>, <code class="highlighter-rouge">MESOS_TCP</code>, and <code class="highlighter-rouge">COMMAND</code>) health checks are locally
-executed by Mesos on the agent running the corresponding task and thus test reachability from the Mesos executor. Mesos-level health checks offer the following advantages over Marathon-level health checks:</p>
+<p>Mesos-level health checks (<code class="highlighter-rouge">MESOS_HTTP</code>, <code class="highlighter-rouge">MESOS_HTTPS</code>, <code class="highlighter-rouge">MESOS_TCP</code>, and <code class="highlighter-rouge">COMMAND</code>) are locally executed by Mesos on the agent running the corresponding task and thus test reachability from the Mesos executor. Mesos-level health checks offer the following advantages over Marathon-level health checks:</p>
 
 <ul>
   <li>
